@@ -927,7 +927,7 @@ def password_reset_confirm_wrapper(request, uidb36=None, token=None):
 
         updated_user.save()
 
-        if response.status_code == 302:
+        if response.status_code == 302 and 'is_account_recovery' in request.GET:
             messages.success(
                 request,
                 HTML(_(
