@@ -719,6 +719,7 @@ def password_change_request_handler(request):
     else:
         return HttpResponseBadRequest(_("No email address provided."))
 
+
 def get_user_from_email(email):
     """
     Find a user using given email and return it.
@@ -912,8 +913,18 @@ def password_reset_confirm_wrapper(request, uidb36=None, token=None):
 
         # get the updated user
         updated_user = User.objects.get(id=uid_int)
-        updated_user.email = updated_user.account_recovery.secondary_email
-        updated_user.account_recovery.delete()
+
+        if 'is_account_recovery' in request.GET:
+            try:
+                updated_user.email = updated_user.account_recovery.secondary_email
+                updated_user.account_recovery.delete()
+            except ObjectDoesNotExist:
+                log.error(
+                    'Account recovery process initiated without AccountRecovery instance for user {username}'.format(
+                        username=updated_user.username
+                    )
+                )
+
         updated_user.save()
 
         if response.status_code == 302:
